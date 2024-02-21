@@ -1,0 +1,17 @@
+version: "3"
+services:
+#Used to update the ip of your domain on cloudflare
+ ddns:
+    image: oznu/cloudflare-ddns:latest
+    container_name: ddns
+    restart: always
+    networks:
+      - ddns
+    environment:
+      - API_KEY=
+      - ZONE=
+      - PROXIED=false
+
+networks:
+  ddns:
+    name: ddns

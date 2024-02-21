@@ -1,0 +1,38 @@
+version: '3'
+services:
+ ldap:
+    image: osixia/openldap:latest
+    container_name: openldap
+    environment:
+      - LDAP_ORGANISATION=
+      - LDAP_DOMAIN=domain.com
+      - LDAP_ADMIN_PASSWORD=
+    networks:
+      - ldap
+    ports:
+      - 389:389
+    volumes:
+      - {path to config}/open-ldap/config:/etc/ldap/slapd.d
+      - {path to config}/open-ldap/database:/var/lib/ldap
+     
+################################################################
+
+ lam:
+    image: jacksgt/ldap-account-manager
+    container_name: ldap-account-manager
+    networks:
+      - ldap
+      - proxied_apps
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.ldap.rule=Host(`ldap.domain.com`) 
+      - traefik.http.routers.ldap.entrypoints=websecure  
+      - traefik.http.routers.ldap.tls.certresolver=letsencrypt
+      - traefik.http.routers.ldap.tls=true
+      - traefik.http.services.ldap.loadbalancer.server.port=8080
+
+networks:
+  ldap:
+    name: ldap
+  proxied_apps:
+    external: true

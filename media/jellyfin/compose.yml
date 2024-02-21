@@ -1,0 +1,86 @@
+version: "3"
+services:
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.domain.com`) 
+      - traefik.http.routers.jellyfin.entrypoints=websecure  
+      - traefik.http.routers.jellyfin.tls.certresolver=letsencrypt   
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096  
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - {path to config}/jellyfin:/config
+      - {path to files}/series:/data/tvshows
+      - {path to files}/movies:/data/movies
+    ports:
+      - 8096:8096
+      - 7359:7359/udp 
+      - 1900:1900/udp 
+    networks:
+      - proxied_apps
+      - ldap
+      - arr_apps
+    restart: unless-stopped
+
+###############################################################
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    labels:
+     - traefik.enable=true 
+     - traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.domain.com`) 
+     - traefik.http.routers.audiobookshelf.entrypoints=websecure  
+     - traefik.http.routers.audiobookshelf.tls.certresolver=letsencrypt
+     - traefik.http.routers.audiobookshelf.middlewares=forward-auth@file
+    environment:
+     - PUID=1000
+     - PGID=1000
+     - TZ=Europe/London
+    ports:
+      - 13378:80
+    networks:
+      - proxied_apps
+    volumes:
+      - {path to files}/audiobooks:/audiobooks
+      - {path to files}/podcasts:/podcasts
+      - {path to config}/audiobookshelf/config:/config
+      - {path to files}/metadata:/metadata
+    restart: unless-stopped
+
+#############################################################################
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.domain.com`) 
+      - traefik.http.routers.jellyseerr.entrypoints=websecure  
+      - traefik.http.routers.jellyseerr.tls.certresolver=letsencrypt
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Europe/London
+    ports:
+      - 5055:5055
+    networks:
+      - proxied_apps
+      - arr_apps
+    volumes:
+      - {path to config}/jellyseer/config:/app/config
+    restart: unless-stopped
+       
+#############################################################################
+
+networks:
+  proxied_apps:
+    external: true
+  ldap:
+    external: true
+  arr_apps:
+    external: true

@@ -1,0 +1,33 @@
+version: "3"
+services:
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: mariadb
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      - MYSQL_ROOT_PASSWORD=adminPassword
+    volumes:
+      - {path to config}/mariadb/config:/config
+    networks:
+      - mariadb
+    ports:
+      - 3306:3306
+    restart: unless-stopped
+
+###################################################
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: unless-stopped   
+    ports:
+      - 8383:8080
+    networks:
+      - mariadb
+
+networks:
+  mariadb:
+    name: mariadb

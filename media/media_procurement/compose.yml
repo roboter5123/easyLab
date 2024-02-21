@@ -1,0 +1,156 @@
+version: "3"
+services:
+  #used to find, download and organize movie torrents
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.radarr.rule=Host(`radarr.domain.com`) 
+      - traefik.http.routers.radarr.entrypoints=websecure  
+      - traefik.http.routers.radarr.tls.certresolver=letsencrypt   
+      - traefik.http.routers.radarr.middlewares=forward-auth@file
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - {path to config}/radarr/config:/config
+      - {path to files}:/storage
+    ports:
+      - 7878:7878
+    networks:
+      - proxied_apps
+      - torrents
+      - arr_apps
+    restart: unless-stopped
+
+##################################################################
+
+  #used to find, download and organize series torrents
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.sonarr.rule=Host(`sonarr.domain.com`) 
+      - traefik.http.routers.sonarr.entrypoints=websecure  
+      - traefik.http.routers.sonarr.tls.certresolver=letsencrypt   
+      - traefik.http.routers.sonarr.middlewares=forward-auth@file
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - {path to config}/sonarr/config:/config
+      - {path to files}:/storage
+    ports:
+      - 8989:8989
+    networks:
+      - proxied_apps
+      - torrents
+      - arr_apps
+    restart: unless-stopped
+
+##################################################################
+
+  #used to find, download and organize subtitles
+  bazarr:
+    image: lscr.io/linuxserver/bazarr
+    container_name: bazarr
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.bazarr.rule=Host(`bazarr.domain.com`) 
+      - traefik.http.routers.bazarr.entrypoints=websecure  
+      - traefik.http.routers.bazarr.tls.certresolver=letsencrypt   
+      - traefik.http.routers.bazarr.middlewares=forward-auth@file
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - {path to config}/bazarr/config:/config
+      - {path to files}:/storage
+    ports:
+      - 6767:6767
+    networks:
+      - proxied_apps
+      - arr_apps
+    restart: unless-stopped
+
+##################################################################
+
+  #used to overcome cloudflare captchas for torrents
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      - BROWSER_TIMEOUT=55000
+      - LOG_LEVEL=debug
+    networks:
+      - arr_apps
+    restart: unless-stopped
+
+##################################################################
+
+  #Used to manage torrent indexers
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.prowlarr.rule=Host(`prowlarr.domain.com`) 
+      - traefik.http.routers.prowlarr.entrypoints=websecure  
+      - traefik.http.routers.prowlarr.tls.certresolver=letsencrypt
+      - traefik.http.routers.prowlarr.middlewares=forward-auth@file
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - {path to config}/prowlarr:/config
+      - {path to files}:/storage
+    ports:
+      - 9696:9696
+    networks:
+      - proxied_apps
+      - torrents
+      - arr_apps
+    restart: unless-stopped
+ 
+##################################################################
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:nightly
+    container_name: readarr
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.readarr.rule=Host(`readarr.domain.com`) 
+      - traefik.http.routers.readarr.entrypoints=websecure  
+      - traefik.http.routers.readarr.tls.certresolver=letsencrypt
+      - traefik.http.routers.readarr.middlewares=forward-auth@file
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - {path to config}/readarr:/config
+      - {path to files}:/storage
+    networks:
+      - proxied_apps
+      - torrents
+      - arr_apps
+    ports:
+      - 8787:8787
+    restart: unless-stopped
+
+networks:
+  proxied_apps:
+    external: true
+  torrents:
+    external: true
+  arr_apps:
+    name: arr_apps

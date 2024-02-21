@@ -1,0 +1,37 @@
+version: '3'
+services:
+ transmission:
+    image: lscr.io/linuxserver/transmission
+    container_name: transmission
+    labels:
+      - swag=enable
+      - traefik.enable=true 
+      - traefik.http.routers.transmission.rule=Host(`transmission.domain.com`) 
+      - traefik.http.routers.transmission.entrypoints=websecure  
+      - traefik.http.routers.transmission.tls.certresolver=letsencrypt
+      - traefik.http.services.transmission.loadbalancer.server.port=9091
+      - traefik.http.routers.transmission.middlewares=forward-auth@file
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - {path to config}/transmission/config:/config
+      - {path to files}/downloads:/downloads
+      - {path to config}/transmission/watch:/watch
+    networks:
+      - torrents
+      - proxied_apps
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+
+networks:
+  torrents:
+   name: torrents
+  proxied_apps:
+    external: true
+  
+  

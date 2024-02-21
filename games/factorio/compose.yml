@@ -1,0 +1,19 @@
+version: "3"
+services:
+
+ factorio:
+    image: factoriotools/factorio:stable
+    container_name: factorio
+    stdin_open: true
+    tty: true        
+    restart: always
+    ports:
+      - 34197:34197/udp
+    volumes:
+      - {path to config}/factorio:/factorio
+    networks:
+    - factorio
+
+networks:
+ factorio:
+  name: factorio

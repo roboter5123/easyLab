@@ -1,0 +1,96 @@
+version: "3"
+services:
+
+  Minecraft-Bungeecord:
+    image: itzg/bungeecord
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    container_name: minecraft_bungeecord
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      - EULA=TRUE
+      - SERVER_NAME="Minecraft Hub Server"
+      - Allow_Cheats=TRUE
+      - TYPE=WATERFALL
+      - ONLINE_MODE=FALSE 
+      - ENABLE_RCON=TRUE
+      - RCON_PORT=25575
+    volumes:
+      - {path to config}/bungeecord:/server
+    networks:
+     - mariadb
+     - minecraft
+    ports:
+      - 25565:25577
+      - 19132:19132/udp
+    restart: unless-stopped   
+ 
+##################################################################
+ 
+  Minecraft-Lobby:
+   image: itzg/minecraft-server
+   stdin_open: true # docker run -i
+   tty: true        # docker run -t
+   container_name: minecraft_lobby
+   environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      - EULA=TRUE
+      - SERVER_NAME="Minecraft Lobby"
+      - Allow_Cheats=TRUE
+      - TYPE=PAPER
+      - ONLINE_MODE=FALSE
+      - MEMORY=1G
+      - JVM_DD_OPTS=disable.watchdog=TRUE
+      - MAX_TICK_TIME=-1
+      - ENABLE_AUTOPAUSE=TRUE
+      # iPortal,LuckPerms,viabackwardsupdater,viaversionupdater
+      - SPIGET_RESOURCES=29552,28140,108787,108786
+   volumes:
+      - {path to config}/minecraft_lobby:/data
+   networks:
+     - mariadb
+     - minecraft
+   ports:
+      - 25566:25565
+   restart: unless-stopped
+    
+ ##################################################################
+
+  Minecraft-server:
+   image: itzg/minecraft-server
+   stdin_open: true # docker run -i
+   tty: true        # docker run -t
+   container_name: minecraft_server
+   environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      - EULA=TRUE
+      - SERVER_NAME="Minecraft Server"
+      - Allow_Cheats=TRUE
+      - TYPE=PAPER
+      - ONLINE_MODE=FALSE
+      - MEMORY=6G
+      # iPortal,LuckPerms,viabackwardsupdater,viaversionupdater
+      - SPIGET_RESOURCES=29552,28140,108787,108786
+      - ENABLE_AUTOPAUSE=TRUE
+      - JVM_DD_OPTS=disable.watchdog=TRUE
+      - MAX_TICK_TIME=-1
+   volumes:
+      - {path to config}/minecraft_server:/data
+   networks:
+     - mariadb
+     - minecraft
+   ports:
+      - 25568:25565
+   restart: unless-stopped
+
+networks:
+  mariadb:
+    external: true
+  minecraft:
+    name: minecraft

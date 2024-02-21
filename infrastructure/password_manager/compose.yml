@@ -1,0 +1,28 @@
+version: '3'
+services:
+  bitwarden:
+    image: vaultwarden/server
+    container_name: bitwarden
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.bitwarden.rule=Host(`bitwarden.domain.com`) 
+      - traefik.http.routers.bitwarden.entrypoints=websecure  
+      - traefik.http.routers.bitwarden.tls.certresolver=letsencrypt
+      - traefik.http.services.bitwarden.loadbalancer.server.port=80 
+    environment:
+      - ADMIN_TOKEN=
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=true
+      - DOMAIN=https://bitwarden.domain.com
+    ports:
+      - 8343:80
+      - 3012:3012
+    volumes:
+      - {path to config}/bitwarden:/data/:rw
+    networks:
+      - proxied_apps
+    restart: unless-stopped
+
+networks:
+  proxied_apps:
+    external: true
