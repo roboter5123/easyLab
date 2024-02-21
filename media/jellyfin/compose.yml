@@ -17,14 +17,14 @@ services:
       - {path to config}/jellyfin:/config
       - {path to files}/series:/data/tvshows
       - {path to files}/movies:/data/movies
-    ports:
-      - 8096:8096
-      - 7359:7359/udp 
-      - 1900:1900/udp 
     networks:
       - proxied_apps
       - ldap
       - arr_apps
+    ports:
+      - 8096:8096
+      - 7359:7359/udp 
+      - 1900:1900/udp 
     restart: unless-stopped
 
 ###############################################################
@@ -42,15 +42,15 @@ services:
      - PUID=1000
      - PGID=1000
      - TZ=Europe/London
-    ports:
-      - 13378:80
-    networks:
-      - proxied_apps
     volumes:
       - {path to files}/audiobooks:/audiobooks
       - {path to files}/podcasts:/podcasts
       - {path to config}/audiobookshelf/config:/config
       - {path to files}/metadata:/metadata
+    networks:
+      - proxied_apps
+    ports:
+      - 13378:80
     restart: unless-stopped
 
 #############################################################################
@@ -66,13 +66,13 @@ services:
     environment:
       - LOG_LEVEL=debug
       - TZ=Europe/London
-    ports:
-      - 5055:5055
+    volumes:
+      - {path to config}/jellyseer/config:/app/config
     networks:
       - proxied_apps
       - arr_apps
-    volumes:
-      - {path to config}/jellyseer/config:/app/config
+    ports:
+      - 5055:5055
     restart: unless-stopped
        
 #############################################################################

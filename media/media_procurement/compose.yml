@@ -17,12 +17,12 @@ services:
     volumes:
       - {path to config}/radarr/config:/config
       - {path to files}:/storage
-    ports:
-      - 7878:7878
     networks:
       - proxied_apps
       - torrents
       - arr_apps
+    ports:
+      - 7878:7878
     restart: unless-stopped
 
 ##################################################################
@@ -44,12 +44,12 @@ services:
     volumes:
       - {path to config}/sonarr/config:/config
       - {path to files}:/storage
-    ports:
-      - 8989:8989
     networks:
       - proxied_apps
       - torrents
       - arr_apps
+    ports:
+      - 8989:8989
     restart: unless-stopped
 
 ##################################################################
@@ -71,11 +71,11 @@ services:
     volumes:
       - {path to config}/bazarr/config:/config
       - {path to files}:/storage
-    ports:
-      - 6767:6767
     networks:
       - proxied_apps
       - arr_apps
+    ports:
+      - 6767:6767
     restart: unless-stopped
 
 ##################################################################
@@ -113,12 +113,12 @@ services:
     volumes:
       - {path to config}/prowlarr:/config
       - {path to files}:/storage
-    ports:
-      - 9696:9696
     networks:
       - proxied_apps
       - torrents
       - arr_apps
+    ports:
+      - 9696:9696
     restart: unless-stopped
  
 ##################################################################

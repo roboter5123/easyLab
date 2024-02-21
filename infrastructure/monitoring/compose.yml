@@ -4,19 +4,19 @@ services:
   grafana:
     image: grafana/grafana-oss:latest
     container_name: grafana
+    user: root
     labels:
       - traefik.enable=true 
       - traefik.http.routers.grafana.rule=Host(`grafana.domain.com`) 
       - traefik.http.routers.grafana.entrypoints=websecure  
       - traefik.http.routers.grafana.tls.certresolver=letsencrypt
-    user: root
-    ports:
-      - 3000:3000
     volumes:
       - {path to config}/grafana:/var/lib/grafana
     networks:
       - proxied_apps
       - monitoring
+    ports:
+      - 3000:3000
     restart: unless-stopped   
 
 ######################################################################
@@ -24,12 +24,14 @@ services:
   prometheus:
     image: prom/prometheus:v2.37.9
     container_name: prometheus
+    user: root
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
     labels:
       - traefik.enable=true 
       - traefik.http.routers.prometheus.rule=Host(`prometheus.domain.com`) 
       - traefik.http.routers.prometheus.entrypoints=websecure  
       - traefik.http.routers.prometheus.tls.certresolver=letsencrypt
-    user: root
     environment:
       - PUID=1000
       - PGID=1000
@@ -40,8 +42,6 @@ services:
       - monitoring
     ports:
       - 9090:9090
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yaml'
     restart: unless-stopped   
 
 #########################################################################
@@ -49,12 +49,12 @@ services:
   node_exporter:
     image: quay.io/prometheus/node-exporter:v1.5.0
     container_name: node_exporter
-    command: '--path.rootfs=/host'
     pid: host
-    networks:
-      - monitoring
+    command: '--path.rootfs=/host'
     volumes:
       - /:/host:ro,rslave
+    networks:
+      - monitoring
     ports:
       - 9100:9100
     restart: unless-stopped   
@@ -68,15 +68,15 @@ services:
       - "--housekeeping_interval=30s"
       - "--docker_only=true"
       - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
-    ports:
-      - 8080:8080
-    networks:
-      - monitoring
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - monitoring
+    ports:
+      - 8080:8080
     restart: unless-stopped   
 
 networks:

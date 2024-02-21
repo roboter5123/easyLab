@@ -14,13 +14,13 @@ services:
       - WEBSOCKET_ENABLED=true
       - SIGNUPS_ALLOWED=true
       - DOMAIN=https://bitwarden.domain.com
-    ports:
-      - 8343:80
-      - 3012:3012
     volumes:
       - {path to config}/bitwarden:/data/:rw
     networks:
       - proxied_apps
+    ports:
+      - 8343:80
+      - 3012:3012
     restart: unless-stopped
 
 networks:

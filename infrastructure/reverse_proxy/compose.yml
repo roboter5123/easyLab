@@ -5,18 +5,6 @@ services:
     image: traefik:latest
     container_name: traefik
     command: --api.insecure=true --providers.docker
-    environment:
-      - CF_API_EMAIL=
-      - CF_API_KEY=
-    ports:
-      - 80:80
-      - 443:443
-      - 8181:8080
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - {path to config}/traefik/config:/etc/traefik
-    networks:
-      - proxied_apps
     labels:
       - traefik.enable=true
       - traefik.http.routers.traefik.rule=Host(`traefik.domain.com`)
@@ -36,6 +24,18 @@ services:
       - traefik.http.routers.api.tls.domains[1].main=otherdomain.win
       - traefik.http.routers.api.tls.domains[1].sans=*.otherdomain.win
       - traefik.http.routers.api.tls.certResolver=letsencrypt
+    environment:
+      - CF_API_EMAIL=
+      - CF_API_KEY=
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {path to config}/traefik/config:/etc/traefik
+    networks:
+      - proxied_apps
+    ports:
+      - 80:80
+      - 443:443
+      - 8181:8080
     restart: unless-stopped
 
 #####################################################################
@@ -43,19 +43,6 @@ services:
   forward-auth:
     container_name: forward-auth
     image: thomseddon/traefik-forward-auth:2
-    networks:
-      - proxied_apps
-      - oauth
-    environment:
-      - AUTH_HOST=auth.domain.com
-      - COOKIE_DOMAIN=domain.com
-      - SECRET=
-      - URL_PATH=/_oauth
-      - PORT=4181
-      - DEFAULT_PROVIDER=oidc
-      - PROVIDERS_OIDC_ISSUER_URL=https://keycloak.domain.com/realms/{realmid}
-      - PROVIDERS_OIDC_CLIENT_ID=traefik
-      - PROVIDERS_OIDC_CLIENT_SECRET=
     labels:
       - traefik.enable=true
       - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181
@@ -67,7 +54,19 @@ services:
       - traefik.http.routers.traefik-forward-auth.tls=true
       - traefik.http.routers.traefik-forward-auth.middlewares=forward-auth@file
       - traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181
-
+    environment:
+      - AUTH_HOST=auth.domain.com
+      - COOKIE_DOMAIN=domain.com
+      - SECRET=
+      - URL_PATH=/_oauth
+      - PORT=4181
+      - DEFAULT_PROVIDER=oidc
+      - PROVIDERS_OIDC_ISSUER_URL=https://keycloak.domain.com/realms/{realmid}
+      - PROVIDERS_OIDC_CLIENT_ID=traefik
+      - PROVIDERS_OIDC_CLIENT_SECRET=
+    networks:
+      - proxied_apps
+      - oauth
 
 networks:
   proxied_apps:

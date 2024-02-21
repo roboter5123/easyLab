@@ -6,13 +6,13 @@ services:
     container_name: factorio
     stdin_open: true
     tty: true        
-    restart: always
-    ports:
-      - 34197:34197/udp
     volumes:
       - {path to config}/factorio:/factorio
     networks:
-    - factorio
+      - factorio
+    ports:
+      - 34197:34197/udp
+    restart: always
 
 networks:
  factorio:

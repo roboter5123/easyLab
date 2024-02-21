@@ -4,7 +4,6 @@ services:
     image: lscr.io/linuxserver/transmission
     container_name: transmission
     labels:
-      - swag=enable
       - traefik.enable=true 
       - traefik.http.routers.transmission.rule=Host(`transmission.domain.com`) 
       - traefik.http.routers.transmission.entrypoints=websecure  
