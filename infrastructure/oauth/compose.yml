@@ -13,18 +13,32 @@ services:
     command:
       - "start"
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=
-      - KC_HOSTNAME_URL=https://keycloak.domain.com
-      - KC_DB=mariadb
-      - KC_DB_URL=jdbc:mariadb://mariadb:3306/keycloak
-      - KC_DB_USERNAME=keycloak
-      - KC_DB_PASSWORD=
+      - KC_PROXY=edge
+      - KC_HOSTNAME_STRICT_BACKCHANNEL=true
+      - KC_HOSTNAME_DEBUG=true
+
+      # Put your ssl certs in the {path to config}/keycloak/config folder
       - KC_HTTPS_CERTIFICATE_FILE=config/fullchain.pem
       - KC_HTTPS_CERTIFICATE_KEY_FILE=config/keyfile.pem
-      - KC_PROXY=edge
-      - KC_HOSTNAME_DEBUG=true
-      - KC_HOSTNAME_STRICT_BACKCHANNEL=true
+
+      # jdbc url of your database
+      # If you are using the easylab database stack you can leave this as is
+      - KC_DB_URL=jdbc:mariadb://mariadb:3306/keycloak
+      # Which database vendor is used
+      - KC_DB=mariadb
+
+      # The url from which keycloak will be accessible
+      - KC_HOSTNAME_URL=https://keycloak.domain.com
+
+      # Name for the admin user in the master realm
+      - KEYCLOAK_ADMIN=admin
+      # Password for the admin user in the master realm
+      - KEYCLOAK_ADMIN_PASSWORD=
+
+      # Name for the mariadb user
+      - KC_DB_USERNAME=keycloak
+      # Password for the mariadb user
+      - KC_DB_PASSWORD=
     volumes:
       - {path to config}/keycloak/config:/config
     networks:

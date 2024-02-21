@@ -4,8 +4,11 @@ services:
     image: osixia/openldap:latest
     container_name: openldap
     environment:
+      # Name of your organization
       - LDAP_ORGANISATION=
+      # Your ldap domain ex.: domain.com
       - LDAP_DOMAIN=
+      #Password for the admin user (cd=admin,dn=domain,dn=com)
       - LDAP_ADMIN_PASSWORD=
     volumes:
       - {path to config}/open-ldap/config:/etc/ldap/slapd.d

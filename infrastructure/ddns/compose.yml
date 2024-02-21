@@ -7,9 +7,12 @@ services:
     networks:
       - ddns
     environment:
-      - API_KEY=
-      - ZONE=
       - PROXIED=false
+      # Global API key from cloudflare
+      # Found at https://dash.cloudflare.com/profile/api-tokens
+      - API_KEY=
+      # should be equal to your domain ex.: domain.com
+      - ZONE=
     restart: always
 
 networks:

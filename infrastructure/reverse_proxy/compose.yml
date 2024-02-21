@@ -7,25 +7,33 @@ services:
     command: --api.insecure=true --providers.docker
     labels:
       - traefik.enable=true
+      # http rule for the traefik dashboard
       - traefik.http.routers.traefik.rule=Host(`traefik.domain.com`)
       - traefik.http.routers.traefik.entryPoints=console
       - traefik.http.routers.traefik.service=api@internal
+      # protects the http traefik dashboard with keycloak
       - traefik.http.routers.traefik.middlewares=forward-auth@file
 
-      - traefik.http.services.traefikssl.loadbalancer.server.port=8181
+      # https rule for the traefik dashboard
       - traefik.http.routers.traefikssl.rule=Host(`traefik.domain.com`)
-      - traefik.http.routers.traefikssl.middlewares=forward-auth@file
       - traefik.http.routers.traefikssl.entrypoints=websecure
-      - traefik.http.routers.traefikssl.service=api@internal
       - traefik.http.routers.traefikssl.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefikssl.service=api@internal
+      # protects the https traefik dashboard with keycloak
+      - traefik.http.routers.traefikssl.middlewares=forward-auth@file
+      - traefik.http.services.traefikssl.loadbalancer.server.port=8181
 
+      # Put the domains you want to protect with ssl here
       - traefik.http.routers.api.tls.domains[0].main=domain.com
       - traefik.http.routers.api.tls.domains[0].sans=*.domain.com
       - traefik.http.routers.api.tls.domains[1].main=otherdomain.win
       - traefik.http.routers.api.tls.domains[1].sans=*.otherdomain.win
       - traefik.http.routers.api.tls.certResolver=letsencrypt
     environment:
+      # Email adress for the Cloudflare accoutn that has your domains
       - CF_API_EMAIL=
+      # Global API key from cloudflare
+      # Found at https://dash.cloudflare.com/profile/api-tokens
       - CF_API_KEY=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -40,6 +48,7 @@ services:
 
 #####################################################################
 
+  # Defines a middleware that can be put in front of services to authenticate users with keycloak
   forward-auth:
     container_name: forward-auth
     image: thomseddon/traefik-forward-auth:2
@@ -48,21 +57,29 @@ services:
       - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181
       - traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User
 
-      - traefik.http.routers.traefik-forward-auth.rule=Host(`auth.roboter5123.com`) 
+      # https rule for the forward auth
+      - traefik.http.routers.traefik-forward-auth.rule=Host(`auth.domain.com`) 
       - traefik.http.routers.traefik-forward-auth.entrypoints=websecure  
       - traefik.http.routers.traefik-forward-auth.tls.certresolver=letsencrypt
       - traefik.http.routers.traefik-forward-auth.tls=true
       - traefik.http.routers.traefik-forward-auth.middlewares=forward-auth@file
       - traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181
     environment:
-      - AUTH_HOST=auth.domain.com
-      - COOKIE_DOMAIN=domain.com
-      - SECRET=
       - URL_PATH=/_oauth
       - PORT=4181
       - DEFAULT_PROVIDER=oidc
+      # The domain from which the forward auth will be available
+      - AUTH_HOST=auth.domain.com
+      # Your root domain that should be protected by this middleware
+      - COOKIE_DOMAIN=domain.com
+      # A password used for encryption. Could be anything you don't need to enter this anywhere it's just for encryption
+      - SECRET=
+      # Authentication url of your keycloak realm.
+      # Swap {realmid} for your realms id and domain for your domain
       - PROVIDERS_OIDC_ISSUER_URL=https://keycloak.domain.com/realms/{realmid}
+      # Client id from your realm for traefik
       - PROVIDERS_OIDC_CLIENT_ID=traefik
+      # Secret from your realm for the traefic client
       - PROVIDERS_OIDC_CLIENT_SECRET=
     networks:
       - proxied_apps

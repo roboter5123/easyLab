@@ -5,7 +5,7 @@ services:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
     labels:
-      - traefik.enable=true 
+      - traefik.enable=true
       - traefik.http.routers.jellyfin.rule=Host(`jellyfin.domain.com`) 
       - traefik.http.routers.jellyfin.entrypoints=websecure  
       - traefik.http.routers.jellyfin.tls.certresolver=letsencrypt   
@@ -20,7 +20,6 @@ services:
     networks:
       - proxied_apps
       - ldap
-      - arr_apps
     ports:
       - 8096:8096
       - 7359:7359/udp 
